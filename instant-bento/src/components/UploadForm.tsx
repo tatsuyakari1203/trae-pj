@@ -71,6 +71,7 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
           >
             {image ? (
               <div className="space-y-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={URL.createObjectURL(image)}
                   alt="Preview"

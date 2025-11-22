@@ -183,11 +183,8 @@ export async function POST(request: NextRequest) {
 
         try {
           // Stream text generation (Thoughts + Partial JSON)
-          let fullText = "";
           for await (const chunk of result.stream) {
             const chunkText = chunk.text();
-            fullText += chunkText;
-            // Send chunk to client
             controller.enqueue(encoder.encode(JSON.stringify({ type: 'chunk', content: chunkText }) + "\n"));
           }
 

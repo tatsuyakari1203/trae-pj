@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { BentoCard } from "@/components/BentoCard";
 
 interface CustomNode {
@@ -67,9 +68,11 @@ export function BentoGrid({ data }: BentoGridProps) {
         <div className="h-full w-full relative rounded-3xl overflow-hidden">
           {/* Full Background Image with Zoom Effect */}
           <div className="absolute inset-0">
-            <img
+            <Image
               src={safeData.processedImage}
               alt={safeData.name}
+              fill
+              unoptimized
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             {/* Gradient Overlay - Fades image into the UI at the bottom/left */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { BentoCard } from "@/components/BentoCard";
 import { UploadForm } from "@/components/UploadForm";
 import { BentoGrid } from "@/components/BentoGrid";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
@@ -10,15 +9,25 @@ import { Button } from "@/components/ui/Button";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
-  const [portfolioData, setPortfolioData] = useState<any>(null);
+  type PortfolioData = {
+    name: string;
+    title: string;
+    bio: string;
+    skills: string[];
+    socials: { platform: string; url: string }[];
+    colorTheme: string;
+    processedImage: string;
+    stats?: { label: string; value: string }[];
+    customNodes?: { colSpan: number; rowSpan: number; type: "html" | "text" | "stat"; content: string }[];
+  } | null;
+
+  const [portfolioData, setPortfolioData] = useState<PortfolioData>(null);
 
   const [streamLog, setStreamLog] = useState<string>("");
-  const [isThinking, setIsThinking] = useState(false);
 
   const handleGenerate = async (formData: { image: File; text: string }) => {
     console.log("🚀 Starting portfolio generation...");
     setIsLoading(true);
-    setIsThinking(true);
     setStreamLog("");
     
     try {
@@ -90,7 +99,7 @@ export default function Home() {
                 } else if (data.type === 'image') {
                   finalImage = data.content;
                 }
-             } catch (e) { /* ignore incomplete end */ }
+             } catch { /* ignore incomplete end */ }
           }
 
           // Parse the final JSON from the accumulated text
@@ -122,18 +131,15 @@ export default function Home() {
           }
 
           setIsLoading(false);
-          setIsThinking(false);
         } catch (error) {
           console.error("❌ Error generating portfolio:", error);
           setIsLoading(false);
-          setIsThinking(false);
         }
       };
       
     } catch (error) {
       console.error("❌ Error generating portfolio:", error);
       setIsLoading(false);
-      setIsThinking(false);
     }
   };
 
