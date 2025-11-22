@@ -63,20 +63,33 @@ export async function POST(request: NextRequest) {
     console.log("🚀 Starting Agentic Workflow...");
 
     // Step 1: Image Enhancement (Parallel)
-    // We start this immediately as it takes time
+    // TEMPORARILY DISABLED due to API Quota limits (429 Errors)
+    // We will just pass through the original image for now.
+    const imagePromise = Promise.resolve({
+      response: {
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: imageMimeType,
+                    data: imageBase64
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    });
+
+    /* 
+    // Original Image Generation Code (Disabled)
     const imagePromise = imageModel.generateContent([
       `Using the provided portrait photo, generate a new high-end professional headshot in a Cinematic 21:9 Ultrawide aspect ratio.
-      
-      CRITICAL FRAMING INSTRUCTIONS:
-      - **ZOOM OUT** significantly to fill the wide 21:9 frame.
-      - Center the subject horizontally, but allow the environment/background to expand on the sides.
-      - Do NOT cut off the top of the head.
-      
-      STYLIZATION INSTRUCTIONS (Make it look AI-processed):
-      - Transform the lighting to "Cinematic Studio Lighting" with a subtle rim light to separate subject from background.
-      - Change the background to a "Modern Abstract Tech Gradient" (Dark Grey/Blue tones).
-      - Enhance image clarity and texture (Upscale feeling).
-      - **KEEP FACIAL IDENTITY 100% PRESERVED.** Only upgrade the style, lighting, and framing.`,
+      ...
+      `,
       {
         inlineData: {
           data: imageBase64,
@@ -84,6 +97,7 @@ export async function POST(request: NextRequest) {
         },
       },
     ]);
+    */
 
     // Step 2: Agent Thinking & Content Generation
     // We create a stream to send "thoughts" and then the final JSON
