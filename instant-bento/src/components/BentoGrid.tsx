@@ -3,6 +3,13 @@
 import { motion } from "framer-motion";
 import { BentoCard } from "@/components/BentoCard";
 
+interface CustomNode {
+  colSpan: number;
+  rowSpan: number;
+  type: "html" | "text" | "stat";
+  content: string;
+}
+
 interface BentoGridProps {
   data: {
     name: string;
@@ -11,6 +18,7 @@ interface BentoGridProps {
     skills: string[];
     socials: { platform: string; url: string }[];
     stats?: { label: string; value: string }[];
+    customNodes?: CustomNode[];
     processedImage: string;
     colorTheme: string;
   };
@@ -28,6 +36,7 @@ export function BentoGrid({ data }: BentoGridProps) {
       { label: "Experience", value: "2+ Years" },
       { label: "Projects", value: "10+" }
     ],
+    customNodes: data?.customNodes || [],
     processedImage: data?.processedImage || "https://via.placeholder.com/300",
     colorTheme: data?.colorTheme || "#3B82F6"
   };
@@ -50,34 +59,45 @@ export function BentoGrid({ data }: BentoGridProps) {
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)]"
+      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)]"
     >
-      {/* Header / Hero Card - Spans full width on mobile, large on desktop */}
-      <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-4 row-span-2">
-        <BentoCard className="h-full relative overflow-hidden group">
-          <div 
-            className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500"
-            style={{ backgroundColor: safeData.colorTheme }}
-          />
-          <div className="relative z-10 h-full flex flex-col md:flex-row items-center md:items-end gap-6 p-8">
+      {/* Header / Hero Card - Blended Avatar Style */}
+      <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-4 row-span-2 relative group">
+        {/* Main Container - No Border/Background for "Floating" effect */}
+        <div className="h-full w-full relative rounded-3xl overflow-hidden">
+          {/* Full Background Image with Zoom Effect */}
+          <div className="absolute inset-0">
             <img
               src={safeData.processedImage}
               alt={safeData.name}
-              className="w-32 h-32 md:w-48 md:h-48 rounded-2xl object-cover shadow-2xl ring-4 ring-white/20"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="text-center md:text-left space-y-2 mb-2 flex-1">
-              <div className="inline-block px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-xs font-medium mb-2 backdrop-blur-sm">
-                Available for work
+            {/* Gradient Overlay - Fades image into the UI at the bottom/left */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/50 to-transparent opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-transparent to-transparent opacity-80" />
+          </div>
+
+          {/* Content - Floating on top */}
+          <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-10">
+            <div className="space-y-4 max-w-2xl">
+              <div 
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-medium text-[var(--foreground)] w-fit"
+              >
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                Open to opportunities
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[var(--foreground)]">
+              
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[var(--foreground)] leading-[0.9]">
                 {safeData.name}
               </h1>
-              <p className="text-xl md:text-2xl text-[var(--muted)] font-medium">
+              
+              <p className="text-xl md:text-2xl text-[var(--muted)] font-medium tracking-tight flex items-center gap-3">
+                <span className="w-8 h-1 rounded-full" style={{ backgroundColor: safeData.colorTheme }} />
                 {safeData.title}
               </p>
             </div>
           </div>
-        </BentoCard>
+        </div>
       </motion.div>
 
       {/* Stats - Vertical Stack */}
@@ -147,6 +167,33 @@ export function BentoGrid({ data }: BentoGridProps) {
           </div>
         </BentoCard>
       </motion.div>
+
+      {/* Custom HTML Nodes from AI - These are the stars of the show */}
+      {safeData.customNodes.map((node, index) => (
+        <motion.div
+          key={`custom-${index}`}
+          variants={item}
+          className={`
+            col-span-1 
+            md:col-span-${Math.min(node.colSpan, 4)} 
+            lg:col-span-${Math.min(node.colSpan, 6)} 
+            row-span-${node.rowSpan}
+          `}
+        >
+          <BentoCard className="h-full overflow-hidden" noPadding={true}>
+            {node.type === 'html' ? (
+               <div 
+                 className="h-full w-full"
+                 dangerouslySetInnerHTML={{ __html: node.content }} 
+               />
+            ) : (
+               <div className="h-full w-full p-6 flex items-center justify-center text-[var(--muted)]">
+                 {node.content}
+               </div>
+            )}
+          </BentoCard>
+        </motion.div>
+      ))}
     </motion.div>
   );
 }

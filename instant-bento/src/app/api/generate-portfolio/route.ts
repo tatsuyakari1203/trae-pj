@@ -48,6 +48,16 @@ export async function POST(request: NextRequest) {
     // using the model from the docs provided
     const imageModel = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash-image", 
+      generationConfig: {
+        // Enforce a vertical rectangular aspect ratio for better Bento fit
+        // Supported: "1:1", "3:4", "4:5", "16:9", etc.
+        // User requested "21:9", so we use "16:9" as the closest API standard and prompt for cinematic width.
+        // @ts-expect-error - imageConfig type definition might be missing in current SDK version but valid in API
+        imageConfig: {
+          aspectRatio: "16:9", 
+        },
+        responseModalities: ["IMAGE"], // We only need the image
+      }
     });
 
     console.log("🚀 Starting Agentic Workflow...");
@@ -55,16 +65,18 @@ export async function POST(request: NextRequest) {
     // Step 1: Image Enhancement (Parallel)
     // We start this immediately as it takes time
     const imagePromise = imageModel.generateContent([
-      `Using the provided portrait photo, enhance it into a professional headshot with these changes:
-      - Transform the background to a clean, minimalist studio background with soft gradient
-      - Adjust lighting to soft, professional studio quality with natural highlights
-      - Keep the person's facial features, expression, and identity EXACTLY the same
-      - Enhance the overall professional appearance suitable for a portfolio
-      - Maintain sharp focus on the face
-      - Create a warm, approachable atmosphere
-      - Preserve the original pose and framing
+      `Using the provided portrait photo, generate a new high-end professional headshot in a Cinematic 21:9 Ultrawide aspect ratio.
       
-      Only modify the background and lighting - do not change the person's appearance, clothing, or pose.`,
+      CRITICAL FRAMING INSTRUCTIONS:
+      - **ZOOM OUT** significantly to fill the wide 21:9 frame.
+      - Center the subject horizontally, but allow the environment/background to expand on the sides.
+      - Do NOT cut off the top of the head.
+      
+      STYLIZATION INSTRUCTIONS (Make it look AI-processed):
+      - Transform the lighting to "Cinematic Studio Lighting" with a subtle rim light to separate subject from background.
+      - Change the background to a "Modern Abstract Tech Gradient" (Dark Grey/Blue tones).
+      - Enhance image clarity and texture (Upscale feeling).
+      - **KEEP FACIAL IDENTITY 100% PRESERVED.** Only upgrade the style, lighting, and framing.`,
       {
         inlineData: {
           data: imageBase64,
@@ -76,32 +88,74 @@ export async function POST(request: NextRequest) {
     // Step 2: Agent Thinking & Content Generation
     // We create a stream to send "thoughts" and then the final JSON
     const textPrompt = `
-    Role: You are an elite Design Agent & Content Strategist.
-    Task: Create a world-class personal portfolio based on the user's raw input: "${text}".
+    Role: You are an elite Senior UI/UX Designer & Content Strategist powered by Gemini 3.
+    Task: Create a world-class, highly detailed personal portfolio based on the user's raw input: "${text}".
     
-    Process:
-    1. ANALYZE: Deeply analyze the input text to understand the user's persona, key strengths, and potential role.
-    2. STRATEGIZE: Plan the portfolio structure. Decide on a unique angle (e.g., "The Innovative Problem Solver" or "The Minimalist Creator").
-    3. GENERATE: Write compelling, high-converting copy.
-       - Name: Extrapolate or use the provided name.
-       - Title: Create a powerful, modern job title.
-       - Bio: Write a punchy, memorable bio (not generic).
-       - Skills: Curate a list of high-impact skills.
-       - Socials: format provided links or placeholders.
-       - Color Theme: Pick a sophisticated hex code matching the persona.
-       - Bento Layout Strategy: Decide how to arrange the grid (implied by the content weight).
+    **LANGUAGE RULE: ENGLISH ONLY**
+    - **CRITICAL:** All generated content (Name, Title, Bio, Skills, Custom Nodes) MUST be in **English**.
+    - If the input is in another language (e.g., Vietnamese), **TRANSLATE** it to professional, high-impact English.
+    - Maintain the original meaning but improve the tone for a global professional audience.
+
+    **DESIGN PHILOSOPHY: "BENTO GRIDS & GLASSMORPHISM"**
+    - Create a visually stunning, modern layout.
+    - Use **Tailwind CSS** for all styling.
+    - **Aesthetics:** Dark mode preferred, high contrast, subtle borders, gradients.
+    - **Typography:** Clean sans-serif (Inter/Geist), tight tracking for headings.
+    - **Layout:** Variable grid sizes. Mix small (1x1), medium (2x1), and large (2x2, 4x2) cards.
+
+    **CORE INSTRUCTION: FREESTYLE HTML NODES**
+    - You are NOT limited to standard fields.
+    - You MUST generate **Custom HTML Nodes** to visualize the user's specific data.
+    - The "content" of a node is raw HTML. You control the padding, background, and internal layout.
+    - **DO NOT** rely on the frontend's default padding. Use \`h-full w-full\` in your root div and define your own structure.
     
+    **DESIGN SYSTEM CHEATSHEET & RULES:**
+    
+    **1. APP THEME COMPATIBILITY:**
+    - **Base Colors:** Use **Zinc/Slate** (\`bg-zinc-900\`, \`text-zinc-400\`) for dark elements to match the app's premium feel. Avoid pure black (#000).
+    - **Primary Accent:** Use the generated \`colorTheme\` hex as your primary brand color.
+    - **Glassmorphism:** Heavy use of \`bg-white/5 backdrop-blur-md border border-white/10\` is encouraged to blend with any background.
+    - **Typography:** ALWAYS use \`font-sans\`. Headings should be \`tracking-tight font-bold\`. Body text \`text-sm leading-relaxed\`.
+
+    **2. THE "IMPRESSIVE GRADIENT" RULE:**
+    - You MUST use stunning, high-quality gradients for key cards (Hero, Stats, Spotlight).
+    - **Do not use plain colors.** Use these specific combinations:
+      - *Hyper:* \`bg-gradient-to-br from-fuchsia-600 to-purple-600\`
+      - *Ocean:* \`bg-gradient-to-tr from-blue-600 to-cyan-500\`
+      - *Sunset:* \`bg-gradient-to-bl from-orange-500 to-rose-500\`
+      - *Midnight:* \`bg-gradient-to-b from-slate-900 to-slate-800 border border-slate-700\`
+      - *Glass:* \`bg-white/5 backdrop-blur-xl border border-white/10\`
+    
+    **3. CSS SAFETY & ROBUSTNESS:**
+    - **Root Element:** EVERY custom node's root 'div' MUST have: \`h-full w-full flex flex-col relative overflow-hidden rounded-3xl\`.
+    - **Overflow:** Always add \`overflow-hidden\` to containers to prevent scrollbars.
+    - **Text Safety:** Use \`truncate\` or \`line-clamp-2\` for headings that might be too long. Use \`break-words\` for long bios.
+    - **Flex Safety:** Use \`min-h-0\` and \`min-w-0\` on flex children to prevent blowouts.
+    - **Contrast:** If using a dark/gradient background, FORCE text to white (\`text-white\`). Do not assume inherited colors.
+    - **Spacing:** Use internal padding (\`p-6\` or \`p-8\`) within your root div.
+
+    **REQUIRED CUSTOM NODES (Creative & Complex):**
+    1.  **"Hero Hologram"**: A 2x2 or 4x2 card. Use a dark gradient background. Overlay a massive, semi-transparent typography of the user's role (e.g., "FOUNDER") cropped off-screen. Place the Name and Title on top.
+    2.  **"Metric Grid"**: A 2x1 card. Split into a grid of 2-3 key metrics. Use a *Glass* background with a subtle glow.
+    3.  **"Stack Orbit"**: A visual representation of skills not just as tags, but as a "constellation" or "orbit" layout using absolute positioning (simulated) or a clean flex/grid map.
+    4.  **"Award Trophy"**: A card dedicated to a single major achievement, using a gold/yellow radial gradient accent.
+
+    **Process:**
+    1.  **ANALYZE**: Identify the Persona. What is the most impressive thing about them?
+    2.  **STRATEGIZE**: Plan a grid. What deserves a 2x2 spotlight?
+    3.  **GENERATE**:
+        - Extract **Name**, **Title**, **Bio** (Detailed), **Skills**, **Socials**.
+        - Generate **ColorTheme** (Hex).
+        - Create **CustomNodes**: An array of HTML-based cards.
+          - "colSpan": 1 to 4.
+          - "rowSpan": 1 or 2.
+          - "content": The HTML string. **IMPORTANT:** The root element should usually have \`h-full w-full p-6 flex flex-col...\`.
+
     Output Format:
-    First, output your "THOUGHTS" block where you explain your reasoning step-by-step.
+    First, output your "THOUGHTS" block.
     Then, output the final "JSON" block.
     
-    Example structure:
-    THOUGHTS:
-    - User mentioned "design" and "code", suggesting a Design Engineer persona.
-    - I will focus on a clean, swiss-style aesthetic.
-    - Bio should be punchy.
-    ...
-    JSON:
+    JSON Structure:
     {
       "name": "...",
       "title": "...",
@@ -109,9 +163,13 @@ export async function POST(request: NextRequest) {
       "skills": [...],
       "socials": [...],
       "colorTheme": "#...",
-      "stats": [
-         {"label": "Years Exp", "value": "5+"},
-         {"label": "Projects", "value": "20+"}
+      "customNodes": [
+        {
+          "colSpan": 2,
+          "rowSpan": 2,
+          "type": "html",
+          "content": "<div class='h-full w-full bg-neutral-900 p-8 rounded-3xl flex flex-col justify-between relative overflow-hidden'><div class='absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full'></div><h3 class='text-neutral-400 uppercase tracking-widest text-xs font-bold'>Key Achievement</h3><p class='text-3xl font-bold text-white mt-2'>Founded SpaceX</p><p class='text-neutral-400 mt-4'>Revolutionized space technology...</p></div>"
+        }
       ]
     }
     `;
@@ -165,17 +223,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error generating portfolio:", error);
     
     // Better error messages
     let errorMessage = "Failed to generate portfolio";
-    if (error?.message?.includes("API key")) {
+    const err = error as Error;
+
+    if (err?.message?.includes("API key")) {
       errorMessage = "Invalid API key. Please check your GEMINI_API_KEY in .env.local";
-    } else if (error?.message?.includes("quota")) {
+    } else if (err?.message?.includes("quota")) {
       errorMessage = "API quota exceeded. Please check your Gemini API usage.";
-    } else if (error?.message) {
-      errorMessage = error.message;
+    } else if (err?.message) {
+      errorMessage = err.message;
     }
     
     return NextResponse.json(

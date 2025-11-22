@@ -5,19 +5,29 @@ interface BentoCardProps {
   children: React.ReactNode;
   colSpan?: number;
   rowSpan?: number;
+  noPadding?: boolean;
+  translucent?: boolean;
 }
 
 export function BentoCard({ 
   className, 
   children, 
   colSpan = 1, 
-  rowSpan = 1 
+  rowSpan = 1,
+  noPadding = false,
+  translucent = false
 }: BentoCardProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl bg-[var(--card)] p-6 shadow-soft border border-[var(--border)]",
-        "transition-all duration-300 hover:shadow-md",
+        "rounded-3xl transition-all duration-500 hover:scale-[1.01] relative overflow-hidden",
+        // Default styles unless translucent
+        !translucent && "bg-[var(--card)] border border-[var(--border)] shadow-sm hover:shadow-xl",
+        // Translucent style for glassmorphism
+        translucent && "bg-white/5 backdrop-blur-md border border-white/10",
+        // Padding control
+        !noPadding && "p-6 md:p-8",
+        // Layout
         colSpan > 1 && `col-span-${colSpan}`,
         rowSpan > 1 && `row-span-${rowSpan}`,
         className

@@ -43,13 +43,20 @@ export default function Home() {
           const decoder = new TextDecoder();
           let accumulatedText = "";
           let finalImage = "";
+          let buffer = "";
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n");
+            // Append new chunk to buffer
+            buffer += decoder.decode(value, { stream: true });
+            
+            // Process complete lines
+            const lines = buffer.split("\n");
+            
+            // Keep the last potentially incomplete line in the buffer
+            buffer = lines.pop() || "";
 
             for (const line of lines) {
               if (!line.trim()) continue;
@@ -65,8 +72,25 @@ export default function Home() {
                 }
               } catch (e) {
                 console.warn("Error parsing stream chunk", e);
+                // If JSON parse fails, it might be part of a split line that got processed too early
+                // but with our logic, 'line' should be a complete line.
+                // However, if the backend sends partial JSON over newlines (it shouldn't based on our backend logic), this could still fail.
+                // Our backend logic sends `JSON.stringify(...) + "\n"`, so valid JSON objects should always be on one line.
               }
             }
+          }
+          
+          // Process any remaining buffer content if it forms a valid JSON
+          if (buffer.trim()) {
+             try {
+                const data = JSON.parse(buffer);
+                if (data.type === 'chunk') {
+                  accumulatedText += data.content;
+                  setStreamLog(prev => prev + data.content);
+                } else if (data.type === 'image') {
+                  finalImage = data.content;
+                }
+             } catch (e) { /* ignore incomplete end */ }
           }
 
           // Parse the final JSON from the accumulated text

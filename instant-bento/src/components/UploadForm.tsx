@@ -59,8 +59,8 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
           </label>
           
           <div
-            className={`border border-[var(--border)] rounded-xl p-8 text-center transition-all duration-200 bg-[var(--card)] ${
-              isDragging ? "ring-accent" : "hover:shadow-soft"
+            className={`border border-[var(--border)] rounded-3xl p-10 text-center transition-all duration-300 bg-[var(--card)] ${
+              isDragging ? "ring-2 ring-[var(--accent)] scale-[1.02]" : "hover:shadow-xl hover:border-[var(--accent)]/50"
             }`}
             onDrop={handleDrop}
             onDragOver={(e) => {
@@ -126,7 +126,7 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={6}
-            className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-[var(--card)] text-[var(--foreground)] placeholder-[var(--muted)]"
+            className="w-full px-6 py-4 border border-[var(--border)] rounded-3xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-[var(--card)] text-[var(--foreground)] placeholder-[var(--muted)] transition-all duration-300 hover:shadow-md"
             placeholder="Example: I'm a software developer with 5 years experience in React and Node.js. I love building user-friendly applications and have worked at tech startups..."
           />
         </div>
@@ -134,9 +134,9 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-[var(--foreground)] text-[var(--background)] font-medium py-4 px-8 rounded-xl hover:opacity-90 transition"
+          className="w-full bg-[var(--foreground)] text-[var(--background)] font-bold text-lg py-5 px-8 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg hover:shadow-xl"
         >
-          Magic Generate
+          ✨ Magic Generate Portfolio
         </button>
       </form>
     </div>
