@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
       imageParts[0].split(':')[1].split(';')[0] : 'image/jpeg';
 
     // Use the user-requested model
-    // "hãy sử dụng model models/gemini-3-pro-preview"
+    // "đổi model sang models/gemini-flash-latest" (Using gemini-1.5-flash as the standard latest flash model)
     // We will use a single model for the "Agent" workflow to maintain context
     const model = genAI.getGenerativeModel({ 
-      model: "models/gemini-3-pro-preview",
+      model: "models/gemini-flash-latest",
       generationConfig: {
-        temperature: 1.0, // Recommended for Gemini 3
+        temperature: 1.0, 
       }
     });
 
