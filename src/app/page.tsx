@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { UploadForm } from "@/components/UploadForm";
 import { BentoGrid } from "@/components/BentoGrid";
-import { LoadingSkeleton } from "@/components/LoadingSkeleton";
-import { H1, Muted } from "@/components/ui/Typography";
+import { H1 } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
-import Iridescence from "@/components/Iridescence";
+import PixelBlast from "@/components/PixelBlast";
+import LetterGlitch from "@/components/LetterGlitch";
 import DecryptedText from "@/components/DecryptedText";
-import Hyperspeed from "@/components/Hyperspeed";
 import SplitText from "@/components/SplitText";
 
 export default function Home() {
@@ -54,7 +53,6 @@ export default function Home() {
 
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
-          let accumulatedText = "";
           let finalImage = "";
           let buffer = "";
 
@@ -78,88 +76,35 @@ export default function Home() {
                 const data = JSON.parse(line);
 
                 if (data.type === 'chunk') {
-                  accumulatedText += data.content;
+                  // Agent thinking / logs
                   setStreamLog(prev => prev + data.content);
+                } else if (data.type === 'data') {
+                  // Final structured data from Function Call
+                  setPortfolioData({
+                    ...data.content,
+                    processedImage: finalImage || base64Image
+                  });
                 } else if (data.type === 'image') {
                   finalImage = data.content;
                 }
               } catch (e) {
                 console.warn("Error parsing stream chunk", e);
-                // If JSON parse fails, it might be part of a split line that got processed too early
-                // but with our logic, 'line' should be a complete line.
-                // However, if the backend sends partial JSON over newlines (it shouldn't based on our backend logic), this could still fail.
-                // Our backend logic sends `JSON.stringify(...) + "\n"`, so valid JSON objects should always be on one line.
               }
             }
           }
 
-          // Process any remaining buffer content if it forms a valid JSON
-          if (buffer.trim()) {
-             try {
-                const data = JSON.parse(buffer);
-                if (data.type === 'chunk') {
-                  accumulatedText += data.content;
-                  setStreamLog(prev => prev + data.content);
-                } else if (data.type === 'image') {
-                  finalImage = data.content;
-                }
-             } catch { /* ignore incomplete end */ }
-          }
-
-          // Parse the final JSON from the accumulated text
-          // We look for the JSON block after the "THOUGHTS" section
-          // Improved regex to find the last JSON object in the text
-          let finalData;
-          try {
-            // Try to find the last valid JSON object
-            const jsonRegex = /\{[\s\S]*\}/g;
-            const matches = accumulatedText.match(jsonRegex);
-
-            if (matches) {
-              // Iterate backwards to find the first valid JSON
-              for (let i = matches.length - 1; i >= 0; i--) {
-                try {
-                  // Check if it looks like our expected structure
-                  const potentialJson = JSON.parse(matches[i]);
-                  if (potentialJson.name && potentialJson.customNodes) {
-                    finalData = potentialJson;
-                    break;
-                  }
-                } catch {
-                  continue;
-                }
-              }
-
-              // If simple match didn't work, try to extract from "JSON:" marker if present
-              if (!finalData) {
-                 const jsonMarkerMatch = accumulatedText.match(/JSON:\s*(\{[\s\S]*\})/);
-                 if (jsonMarkerMatch) {
-                    try {
-                       finalData = JSON.parse(jsonMarkerMatch[1]);
-                    } catch {}
-                 }
-              }
-            }
-          } catch (e) {
-            console.error("Failed to parse final JSON", e);
-          }
-
-          if (finalData) {
-            setPortfolioData({
-              ...finalData,
-              processedImage: finalImage || base64Image
-            });
-          }
-
-          setIsLoading(false);
+          // We no longer need to manually parse JSON from accumulatedText
+          // because the API will send a structured 'data' event.
         } catch (error) {
-          console.error("❌ Error generating portfolio:", error);
+          console.error("Generation failed:", error);
+          setStreamLog(prev => prev + "\n\n❌ Error: " + (error as Error).message);
+        } finally {
           setIsLoading(false);
         }
       };
 
     } catch (error) {
-      console.error("❌ Error generating portfolio:", error);
+      console.error("Error reading image:", error);
       setIsLoading(false);
     }
   };
@@ -254,13 +199,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
       {/* Background Effect */}
-      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
-        <Iridescence color={[0.3, 0.3, 0.3]} mouseReact={false} amplitude={0.1} speed={0.5} />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <PixelBlast color="#32f08c" pixelSize={30} />
       </div>
 
       <div className="container-modern py-12 relative z-10">
         <header className="mb-10 text-center md:text-left">
-          <div className="text-4xl md:text-6xl font-bold tracking-tighter mb-2">
+          <div className="text-4xl md:text-6xl font-bold tracking-tighter mb-2 font-mono">
             <DecryptedText
               text="Instant Bento"
               animateOn="view"
@@ -268,7 +213,7 @@ export default function Home() {
               className="text-[var(--foreground)]"
             />
           </div>
-          <div className="text-[var(--muted)] text-lg">
+          <div className="text-[var(--muted)] text-lg font-mono">
             <SplitText
               text="From Chaos to Portfolio in 5 Seconds"
               className="inline-block"
@@ -283,18 +228,25 @@ export default function Home() {
 
         {isLoading && (
            <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
-             <div className="absolute inset-0 opacity-50">
-                <Hyperspeed />
+             <div className="absolute inset-0 opacity-30">
+                <LetterGlitch
+                  glitchColors={['#32f08c', '#ffffff', '#000000']}
+                  glitchSpeed={50}
+                  centerVignette={true}
+                  outerVignette={true}
+                  smooth={true}
+                  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                />
              </div>
 
-             <div className="relative z-10 max-w-2xl w-full p-8 space-y-6 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10">
+             <div className="relative z-10 max-w-2xl w-full p-8 space-y-6 bg-black/40 backdrop-blur-xl rounded-sm border border-white/10">
                <div className="text-center space-y-2">
-                 <h2 className="text-3xl font-bold text-white animate-pulse">Generating Portfolio...</h2>
-                 <p className="text-zinc-400">Analyzing your profile and designing your bento grid.</p>
+                 <h2 className="text-3xl font-bold text-white animate-pulse font-mono">Generating Portfolio...</h2>
+                 <p className="text-zinc-400 font-mono text-sm">Analyzing your profile and designing your bento grid.</p>
                </div>
 
                {/* Thinking Process Log */}
-               <div className="bg-black/50 rounded-xl p-6 font-mono text-sm overflow-hidden border border-white/5 h-64">
+               <div className="bg-black/50 rounded-sm p-6 font-mono text-sm overflow-hidden border border-white/5 h-64">
                  <div className="flex items-center gap-2 mb-2 text-green-400">
                    <span className="animate-pulse">●</span>
                    <span className="font-bold">AI Agent Thinking...</span>
@@ -312,7 +264,7 @@ export default function Home() {
             <div className="flex justify-between items-center">
               <H1 className="text-2xl">Your Portfolio</H1>
               <div className="flex gap-2">
-                <Button onClick={handleDownload} variant="outline">Download HTML</Button>
+                <Button onClick={handleDownload} variant="secondary">Download HTML</Button>
                 <Button onClick={handleReset} variant="secondary">Create Another</Button>
               </div>
             </div>

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { BloomEffect, EffectComposer, EffectPass, RenderPass, SMAAEffect, SMAAPreset } from 'postprocessing';
 
 interface Distortion {
-  uniforms: Record<string, { value: any }>;
+  uniforms: Record<string, { value: unknown }>;
   getDistortion: string;
   getJS?: (progress: number, time: number) => THREE.Vector3;
 }
@@ -137,7 +137,7 @@ const distortions: Distortions = {
       }
       vec3 getDistortion(float progress){
         float movementProgressFix = 0.02;
-        return vec3( 
+        return vec3(
           cos(progress * PI * uFreq.x + uTime) * uAmp.x - cos(movementProgressFix * PI * uFreq.x + uTime) * uAmp.x,
           nsin(progress * PI * uFreq.y + uTime) * uAmp.y - nsin(movementProgressFix * PI * uFreq.y + uTime) * uAmp.y,
           nsin(progress * PI * uFreq.z + uTime) * uAmp.z - nsin(movementProgressFix * PI * uFreq.z + uTime) * uAmp.z
@@ -169,7 +169,7 @@ const distortions: Distortions = {
       #define PI 3.14159265358979
       vec3 getDistortion(float progress){
         float movementProgressFix = 0.02;
-        return vec3( 
+        return vec3(
           cos(progress * PI * uFreq.x + uTime) * uAmp.x - cos(movementProgressFix * PI * uFreq.x + uTime) * uAmp.x,
           sin(progress * PI * uFreq.y + PI/2. + uTime) * uAmp.y - sin(movementProgressFix * PI * uFreq.y + PI/2. + uTime) * uAmp.y,
           0.
@@ -200,7 +200,7 @@ const distortions: Distortions = {
       #define PI 3.14159265358979
       vec3 getDistortion(float progress){
         float camProgress = 0.0125;
-        return vec3( 
+        return vec3(
           sin(progress * PI * uFreq.x + uTime) * uAmp.x - sin(camProgress * PI * uFreq.x + uTime) * uAmp.x,
           sin(progress * PI * uFreq.y + uTime) * uAmp.y - sin(camProgress * PI * uFreq.y + uTime) * uAmp.y,
           0.
@@ -399,7 +399,7 @@ const distortion_vertex = `
     float xFreq = uDistortionX.g;
     float yAmp = uDistortionY.r;
     float yFreq = uDistortionY.g;
-    return vec3( 
+    return vec3(
       xAmp * nsin(progress * PI * xFreq - PI / 2.),
       yAmp * nsin(progress * PI * yFreq - PI / 2.),
       0.
@@ -456,7 +456,7 @@ class CarLights {
     const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1));
     const geometry = new THREE.TubeGeometry(curve, 40, 1, 8, false);
 
-    const instanced = new THREE.InstancedBufferGeometry().copy(geometry as any) as THREE.InstancedBufferGeometry;
+    const instanced = new THREE.InstancedBufferGeometry().copy(geometry as THREE.BufferGeometry) as THREE.InstancedBufferGeometry;
     instanced.instanceCount = options.lightPairsPerRoadWay * 2;
 
     const laneWidth = options.roadWidth / options.lanesPerRoad;
@@ -556,7 +556,7 @@ const carLightsFragment = `
   #define USE_FOG;
   ${THREE.ShaderChunk['fog_pars_fragment']}
   varying vec3 vColor;
-  varying vec2 vUv; 
+  varying vec2 vUv;
   uniform vec2 uFade;
   void main() {
     vec3 color = vec3(vColor);
@@ -575,8 +575,8 @@ const carLightsVertex = `
   attribute vec3 aColor;
   uniform float uTravelLength;
   uniform float uTime;
-  varying vec2 vUv; 
-  varying vec3 vColor; 
+  varying vec2 vUv;
+  varying vec3 vColor;
   #include <getDistortion_vertex>
   void main() {
     vec3 transformed = position.xyz;
@@ -614,7 +614,7 @@ class LightsSticks {
   init() {
     const options = this.options;
     const geometry = new THREE.PlaneGeometry(1, 1);
-    const instanced = new THREE.InstancedBufferGeometry().copy(geometry as any) as THREE.InstancedBufferGeometry;
+    const instanced = new THREE.InstancedBufferGeometry().copy(geometry as THREE.BufferGeometry) as THREE.InstancedBufferGeometry;
     const totalSticks = options.totalSideLightSticks;
     instanced.instanceCount = totalSticks;
 
@@ -758,7 +758,7 @@ class Road {
       segments
     );
 
-    let uniforms: Record<string, { value: any }> = {
+    let uniforms: Record<string, { value: unknown }> = {
       uTravelLength: { value: options.length },
       uColor: {
         value: new THREE.Color(isRoad ? options.colors.roadColor : options.colors.islandColor)
@@ -827,7 +827,7 @@ class Road {
 
 const roadBaseFragment = `
   #define USE_FOG;
-  varying vec2 vUv; 
+  varying vec2 vUv;
   uniform vec3 uColor;
   uniform float uTime;
   #include <roadMarkings_vars>
@@ -883,15 +883,15 @@ const roadVertex = `
   uniform float uTime;
   ${THREE.ShaderChunk['fog_pars_vertex']}
   uniform float uTravelLength;
-  varying vec2 vUv; 
+  varying vec2 vUv;
   #include <getDistortion_vertex>
   void main() {
     vec3 transformed = position.xyz;
     vec3 distortion = getDistortion((transformed.y + uTravelLength / 2.) / uTravelLength);
     transformed.x += distortion.x;
     transformed.z += distortion.y;
-    transformed.y += -1. * distortion.z;  
-    
+    transformed.y += -1. * distortion.z;
+
     vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.);
     gl_Position = projectionMatrix * mvPosition;
     vUv = uv;
@@ -923,13 +923,13 @@ class App {
   renderPass!: RenderPass;
   bloomPass!: EffectPass;
   clock: THREE.Clock;
-  assets: Record<string, any>;
+  assets: Record<string, unknown>;
   disposed: boolean;
   road: Road;
   leftCarLights: CarLights;
   rightCarLights: CarLights;
   leftSticks: LightsSticks;
-  fogUniforms: Record<string, { value: any }>;
+  fogUniforms: Record<string, { value: unknown }>;
   fovTarget: number;
   speedUpTarget: number;
   speedUp: number;
@@ -1217,14 +1217,15 @@ class App {
 }
 
 const Hyperspeed: FC<HyperspeedProps> = ({ effectOptions = {} }) => {
-  const mergedOptions: HyperspeedOptions = {
-    ...defaultOptions,
-    ...effectOptions
-  };
   const hyperspeed = useRef<HTMLDivElement>(null);
   const appRef = useRef<App | null>(null);
 
   useEffect(() => {
+    const mergedOptions: HyperspeedOptions = {
+      ...defaultOptions,
+      ...effectOptions
+    };
+
     if (appRef.current) {
       appRef.current.dispose();
       const container = document.getElementById('lights');
@@ -1252,7 +1253,7 @@ const Hyperspeed: FC<HyperspeedProps> = ({ effectOptions = {} }) => {
         appRef.current.dispose();
       }
     };
-  }, [mergedOptions]);
+  }, [effectOptions]);
 
   return <div id="lights" className="w-full h-full" ref={hyperspeed}></div>;
 };

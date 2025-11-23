@@ -15,7 +15,7 @@ interface CountUpProps {
 }
 
 export default function CountUp({
-  to,
+  to = 0,
   from = 0,
   direction = 'up',
   delay = 0,
@@ -40,6 +40,7 @@ export default function CountUp({
   const isInView = useInView(ref, { once: true, margin: '0px' });
 
   const getDecimalPlaces = (num: number): number => {
+    if (num === undefined || num === null) return 0;
     const str = num.toString();
     if (str.includes('.')) {
       const decimals = str.split('.')[1];

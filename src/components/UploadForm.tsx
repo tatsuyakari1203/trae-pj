@@ -59,7 +59,7 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
             Upload Your Photo (Selfie or any photo)
           </label>
 
-          <SpotlightCard className="rounded-3xl bg-[var(--card)] border border-[var(--border)] overflow-hidden">
+          <SpotlightCard className="rounded-sm bg-[var(--card)] border border-[var(--border)] overflow-hidden">
             <div
               className={`p-10 text-center transition-all duration-300 ${
                 isDragging ? "bg-[var(--accent)]/10" : ""
@@ -77,70 +77,76 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
                   <img
                     src={URL.createObjectURL(image)}
                     alt="Preview"
-                    className="max-w-xs max-h-48 mx-auto rounded-lg shadow-soft"
+                    className="max-w-xs max-h-48 mx-auto rounded-sm shadow-soft"
                   />
                   <button
                     type="button"
                     onClick={() => setImage(null)}
-                    className="text-[var(--muted)] hover:opacity-80 text-sm"
+                    className="text-[var(--muted)] hover:opacity-80 text-sm font-mono"
                   >
-                    Remove image
+                    [ Remove image ]
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="mx-auto w-12 h-12 bg-[var(--background)] rounded-full flex items-center justify-center border border-[var(--border)]">
+                  <div className="mx-auto w-12 h-12 bg-[var(--background)] rounded-sm flex items-center justify-center border border-[var(--border)]">
                     <svg className="w-6 h-6 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-[var(--muted)]">
+                    <p className="text-[var(--muted)] font-mono text-sm">
                       Drop your image here, or{" "}
-                      <label className="text-[var(--accent)] hover:opacity-80 cursor-pointer">
+                      <label className="text-[var(--accent)] hover:opacity-80 cursor-pointer underline decoration-dashed">
                         browse
                         <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file);
-                        }}
-                      />
-                    </label>
-                  </p>
-                  <p className="text-sm text-[var(--muted)]">
-                    Supports JPG, PNG, GIF up to 10MB
-                  </p>
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              handleImageUpload(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+                    </p>
+                    <p className="text-xs text-[var(--muted)] opacity-70 font-mono">
+                      Supports JPG, PNG, WEBP
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </SpotlightCard>
         </div>
 
         {/* Text Input */}
         <div className="space-y-4">
-          <label htmlFor="text" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Tell us about yourself (paste your CV, write a few lines, or just add keywords)
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 font-mono">
+            Tell us about yourself
           </label>
-          <textarea
-            id="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={6}
-            className="w-full px-6 py-4 border border-[var(--border)] rounded-3xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-[var(--card)] text-[var(--foreground)] placeholder-[var(--muted)] transition-all duration-300 hover:shadow-md"
-            placeholder="Example: I'm a software developer with 5 years experience in React and Node.js. I love building user-friendly applications and have worked at tech startups..."
-          />
+          <div className="relative">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="I'm a software engineer based in Tokyo..."
+              className="w-full h-32 px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent outline-none resize-none transition-all font-mono text-sm"
+            />
+            <div className="absolute bottom-3 right-3 text-xs text-[var(--muted)] font-mono">
+              {text.length} chars
+            </div>
+          </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-[var(--foreground)] text-[var(--background)] font-bold text-lg py-5 px-8 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="w-full h-12 text-lg"
+          disabled={!image || !text}
         >
-          ✨ Magic Generate Portfolio
+          {/* Pixel-style arrow */}
+          <span className="mr-2">Generate Portfolio</span>
+          <span className="font-mono">{`->`}</span>
         </button>
       </form>
     </div>

@@ -21,7 +21,7 @@ export function BentoCard({
   return (
     <SpotlightCard
       className={cn(
-        "rounded-3xl transition-all duration-500 hover:scale-[1.01] relative overflow-hidden h-full",
+        "rounded-sm transition-all duration-500 hover:scale-[1.01] relative overflow-hidden h-full",
         // Default styles unless translucent
         !translucent && "bg-[var(--card)] border border-[var(--border)] shadow-sm hover:shadow-xl",
         // Translucent style for glassmorphism

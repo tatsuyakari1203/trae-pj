@@ -42,13 +42,16 @@ const SplitText: React.FC<SplitTextProps> = ({
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
+    let isMounted = true;
     if (document.fonts.status === 'loaded') {
-      setFontsLoaded(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (isMounted) setFontsLoaded(true);
     } else {
       document.fonts.ready.then(() => {
-        setFontsLoaded(true);
+        if (isMounted) setFontsLoaded(true);
       });
     }
+    return () => { isMounted = false; };
   }, []);
 
   useGSAP(
@@ -61,7 +64,9 @@ const SplitText: React.FC<SplitTextProps> = ({
       if (el._rbsplitInstance) {
         try {
           el._rbsplitInstance.revert();
-        } catch (_) {}
+        } catch {
+          // ignore
+        }
         el._rbsplitInstance = undefined;
       }
 
@@ -126,7 +131,9 @@ const SplitText: React.FC<SplitTextProps> = ({
         });
         try {
           splitInstance.revert();
-        } catch (_) {}
+        } catch {
+          // ignore
+        }
         el._rbsplitInstance = undefined;
       };
     },

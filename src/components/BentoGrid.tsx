@@ -17,8 +17,8 @@ interface CustomNode {
   type: "html" | "text" | "stat" | "react-component";
   content: string; // For HTML/Text
   component?: string; // For react-component
-  props?: any; // For react-component
-  children?: any; // For react-component
+  props?: Record<string, unknown>; // For react-component
+  children?: React.ReactNode; // For react-component
 }
 
 interface BentoGridProps {
@@ -36,7 +36,7 @@ interface BentoGridProps {
 }
 
 // Dynamic Component Renderer
-const DynamicComponent = ({ node }: { node: CustomNode }) => {
+const DynamicComponent = ({ node, safeData }: { node: CustomNode, safeData: { processedImage: string } }) => {
   if (node.type !== 'react-component' || !node.component) return null;
 
   const { component, props, children } = node;
@@ -44,7 +44,7 @@ const DynamicComponent = ({ node }: { node: CustomNode }) => {
   switch (component) {
     case 'GradientText':
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 bg-zinc-900/50">
+        <div className="h-full w-full flex items-center justify-center p-6 font-sans">
           <GradientText {...props}>
             {children || props.text || "Gradient Text"}
           </GradientText>
@@ -52,7 +52,7 @@ const DynamicComponent = ({ node }: { node: CustomNode }) => {
       );
     case 'CountUp':
       return (
-        <div className="h-full w-full flex flex-col items-center justify-center p-6 bg-zinc-900/50">
+        <div className="h-full w-full flex flex-col items-center justify-center p-6 font-sans">
           <div className="text-5xl font-bold text-white mb-2">
             <CountUp {...props} />
           </div>
@@ -61,26 +61,31 @@ const DynamicComponent = ({ node }: { node: CustomNode }) => {
       );
     case 'ShinyText':
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 bg-zinc-900/50">
+        <div className="h-full w-full flex items-center justify-center p-6 font-sans">
           <ShinyText {...props} text={children || props.text || "Shiny Text"} />
         </div>
       );
     case 'TiltedCard':
+       // Fix: Use processedImage if the AI suggests it or if missing
+       const imageSrc = props.imageSrc === 'processedImage' || !props.imageSrc
+         ? safeData.processedImage
+         : props.imageSrc;
+
       return (
-        <div className="h-full w-full flex items-center justify-center bg-zinc-900/50 overflow-hidden">
-          <TiltedCard {...props} />
+        <div className="h-full w-full flex items-center justify-center overflow-hidden font-sans">
+          <TiltedCard {...props} imageSrc={imageSrc} />
         </div>
       );
     case 'DecryptedText':
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 bg-zinc-900/50">
+        <div className="h-full w-full flex items-center justify-center p-6 font-sans">
           <DecryptedText {...props} text={children || props.text || "Decrypted"} />
         </div>
       );
     case 'SplitText':
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 bg-zinc-900/50">
-          <SplitText {...props} text={children || props.text || "Split Text"} />
+        <div className="h-full w-full flex items-center justify-center p-6 font-sans">
+          <SplitText threshold={0.1} {...props} text={children || props.text || "Split Text"} />
         </div>
       );
     default:
@@ -102,7 +107,7 @@ export function BentoGrid({ data }: BentoGridProps) {
     ],
     customNodes: data?.customNodes || [],
     processedImage: data?.processedImage || "https://via.placeholder.com/300",
-    colorTheme: data?.colorTheme || "#3B82F6"
+    colorTheme: data?.colorTheme || "#8400ff"
   };
 
   const container = {
@@ -123,12 +128,11 @@ export function BentoGrid({ data }: BentoGridProps) {
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)]"
+      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)] p-4"
     >
       {/* Header / Hero Card - Blended Avatar Style */}
       <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-4 row-span-2 relative group">
-        {/* Main Container - No Border/Background for "Floating" effect */}
-        <div className="h-full w-full relative rounded-3xl overflow-hidden">
+        <BentoCard className="h-full w-full relative overflow-hidden !p-0 border-none" translucent={true}>
           {/* Full Background Image with Zoom Effect */}
           <div className="absolute inset-0">
             <Image
@@ -147,9 +151,9 @@ export function BentoGrid({ data }: BentoGridProps) {
           <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-10">
             <div className="space-y-4 max-w-2xl">
               <div
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-medium text-[var(--foreground)] w-fit"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-white/10 backdrop-blur-md border border-white/10 text-xs font-medium text-[var(--foreground)] w-fit font-mono"
               >
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-none bg-green-500 animate-pulse" />
                 Open to opportunities
               </div>
 
@@ -157,32 +161,32 @@ export function BentoGrid({ data }: BentoGridProps) {
                 {safeData.name}
               </h1>
 
-              <p className="text-xl md:text-2xl text-[var(--muted)] font-medium tracking-tight flex items-center gap-3">
-                <span className="w-8 h-1 rounded-full" style={{ backgroundColor: safeData.colorTheme }} />
+              <p className="text-xl md:text-2xl text-[var(--muted)] font-medium tracking-tight flex items-center gap-3 font-mono">
+                <span className="w-8 h-1 rounded-none" style={{ backgroundColor: safeData.colorTheme }} />
                 {safeData.title}
               </p>
             </div>
           </div>
-        </div>
+        </BentoCard>
       </motion.div>
 
       {/* Stats - Vertical Stack */}
       <motion.div variants={item} className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 flex flex-col gap-4">
-        <BentoCard className="flex-1 flex flex-col justify-center items-center p-6 bg-[var(--foreground)] text-[var(--background)]">
-          <span className="text-5xl font-bold mb-1">{safeData.stats[0]?.value || "1+"}</span>
-          <span className="text-sm opacity-80 uppercase tracking-wider">{safeData.stats[0]?.label || "Years"}</span>
+        <BentoCard className="flex-1 flex flex-col justify-center items-center p-6 bg-[var(--foreground)] text-[var(--background)]" translucent={true}>
+          <span className="text-5xl font-bold mb-1 font-mono">{safeData.stats[0]?.value || "1+"}</span>
+          <span className="text-sm opacity-80 uppercase tracking-wider font-mono">{safeData.stats[0]?.label || "Years"}</span>
         </BentoCard>
-        <BentoCard className="flex-1 flex flex-col justify-center items-center p-6">
-          <span className="text-5xl font-bold mb-1 text-[var(--accent)]">{safeData.stats[1]?.value || "10+"}</span>
-          <span className="text-sm text-[var(--muted)] uppercase tracking-wider">{safeData.stats[1]?.label || "Projects"}</span>
+        <BentoCard className="flex-1 flex flex-col justify-center items-center p-6" translucent={true}>
+          <span className="text-5xl font-bold mb-1 text-[var(--accent)] font-mono">{safeData.stats[1]?.value || "10+"}</span>
+          <span className="text-sm text-[var(--muted)] uppercase tracking-wider font-mono">{safeData.stats[1]?.label || "Projects"}</span>
         </BentoCard>
       </motion.div>
 
       {/* Bio Card */}
       <motion.div variants={item} className="col-span-1 md:col-span-2 lg:col-span-3 row-span-1">
-        <BentoCard className="h-full p-8 flex flex-col justify-center">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <span className="w-1 h-6 rounded-full" style={{ backgroundColor: safeData.colorTheme }} />
+        <BentoCard className="h-full p-8 flex flex-col justify-center" translucent={true}>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 font-mono">
+            <span className="w-1 h-6 rounded-none" style={{ backgroundColor: safeData.colorTheme }} />
             About
           </h3>
           <p className="text-lg leading-relaxed text-[var(--muted)]">
@@ -193,8 +197,8 @@ export function BentoGrid({ data }: BentoGridProps) {
 
       {/* Socials */}
       <motion.div variants={item} className="col-span-1 md:col-span-2 lg:col-span-3 row-span-1">
-         <BentoCard className="h-full p-6 flex flex-col justify-center">
-          <h3 className="text-sm font-medium text-[var(--muted)] mb-4 uppercase tracking-wider">Connect</h3>
+         <BentoCard className="h-full p-6 flex flex-col justify-center" translucent={true}>
+          <h3 className="text-sm font-medium text-[var(--muted)] mb-4 uppercase tracking-wider font-mono">Connect</h3>
           <div className="flex flex-wrap gap-3">
             {safeData.socials.map((social, index) => (
               <a
@@ -202,9 +206,9 @@ export function BentoGrid({ data }: BentoGridProps) {
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-2 px-5 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md"
+                className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-sm hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md"
               >
-                <span className="font-medium group-hover:text-[var(--accent)]">{social.platform}</span>
+                <span className="font-medium group-hover:text-[var(--accent)] font-mono text-sm">{social.platform}</span>
                 <svg className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -216,13 +220,13 @@ export function BentoGrid({ data }: BentoGridProps) {
 
       {/* Skills - Masonry-ish */}
       <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-6 row-span-auto">
-        <BentoCard className="h-full p-8">
-          <h3 className="text-lg font-semibold mb-6">Expertise</h3>
+        <BentoCard className="h-full p-8" translucent={true}>
+          <h3 className="text-lg font-semibold mb-6 font-mono">Expertise</h3>
           <div className="flex flex-wrap gap-2">
             {safeData.skills.map((skill, index) => (
               <div
                 key={index}
-                className="px-4 py-2 bg-gradient-to-br from-[var(--background)] to-[var(--card)] border border-[var(--border)] rounded-lg text-sm font-medium shadow-sm hover:scale-105 transition-transform cursor-default"
+                className="px-4 py-2 bg-white/5 border border-white/10 rounded-sm text-sm font-medium shadow-sm hover:scale-105 transition-transform cursor-default font-mono"
                 style={{
                   borderLeft: index % 3 === 0 ? `2px solid ${safeData.colorTheme}` : undefined
                 }}
@@ -246,14 +250,14 @@ export function BentoGrid({ data }: BentoGridProps) {
             row-span-${node.rowSpan}
           `}
         >
-          <BentoCard className="h-full overflow-hidden" noPadding={true}>
+          <BentoCard className="h-full overflow-hidden" noPadding={true} translucent={true}>
             {node.type === 'html' ? (
                <div
                  className="h-full w-full"
                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(node.content) }}
                />
             ) : node.type === 'react-component' ? (
-               <DynamicComponent node={node} />
+               <DynamicComponent node={node} safeData={safeData} />
             ) : (
                <div className="h-full w-full p-6 flex items-center justify-center text-[var(--muted)]">
                  {node.content}
