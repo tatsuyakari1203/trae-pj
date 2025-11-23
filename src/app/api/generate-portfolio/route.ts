@@ -104,30 +104,42 @@ export async function POST(request: NextRequest) {
     console.log("🚀 Starting Agentic Workflow with Function Calling (GenAI SDK)...");
 
     const textPrompt = `
-    Role: You are an elite Senior UI/UX Designer & Content Strategist.
-    Task: Analyze the user's input and image, then generate a world-class portfolio structure using the 'generate_portfolio' tool.
+    Role: You are an elite Senior UI/UX Designer & Content Strategist with a focus on Awwwards-winning portfolios.
+    Task: Analyze the user's input and image to generate a highly detailed, content-rich, and visually stunning portfolio structure using the 'generate_portfolio' tool.
 
     **User Input:** "${text}"
 
-    **Process:**
-    1.  **Analyze**: Think about the user's persona, strengths, and best layout strategy. Explain your reasoning step-by-step before calling the function.
-    2.  **Design**: Create a "Glassmorphism & Bento Grid" layout.
-    3.  **Execute**: Call 'generate_portfolio' with the final data.
+    **Workflow (Strict Order):**
+    1.  **Deep Analysis (Thinking Process)**:
+        - Analyze the user's potential persona based on the input.
+        - Determine the best color psychology and typography style.
+        - Plan the layout structure (Bento Grid) to maximize engagement.
+        - *Output this analysis as plain text BEFORE calling the function.*
 
-    **Design Rules:**
+    2.  **Content Generation**:
+        - Write a compelling, professional bio (not generic).
+        - List 6-8 relevant hard and soft skills.
+        - Create 4-6 impressive stats (e.g., "Years Exp", "Projects", "Clients").
+        - Define a sophisticated color theme.
+
+    3.  **Layout Design (Bento Grid)**:
+        - Use a mix of 'colSpan' (1-3) and 'rowSpan' (1-2).
+        - **CRITICAL**: You MUST use the provided React components in 'customNodes' to make the portfolio interactive.
+        - **Components to Use**:
+            - 'GradientText': For the main headline/title.
+            - 'SplitText': For the bio/introduction.
+            - 'CountUp': For *each* stat item.
+            - 'TiltedCard': For the main profile image (use 'processedImage' as imageSrc).
+            - 'ShinyText': For call-to-action or highlights.
+            - 'DecryptedText': For job titles or skills.
+
+    4.  **Execution**:
+        - Call the 'generate_portfolio' function with the fully populated data.
+
+    **Constraints**:
     - **Language**: English Only.
-    - **Style**: Dark mode, glassmorphism, pixel-perfect.
-    - **Components**: Use these React components in 'customNodes':
-      - 'GradientText' (Headings)
-      - 'CountUp' (Stats)
-      - 'ShinyText' (Highlights)
-      - 'DecryptedText' (Tech titles)
-      - 'TiltedCard' (Images - use 'processedImage' as imageSrc)
-      - 'SplitText' (Bio)
-
-    **IMPORTANT**:
-    - For the main profile image, create a 'TiltedCard' component node and set 'imageSrc' to "processedImage" (literal string).
-    - Use 'react-component' type for most nodes.
+    - **Style**: Dark mode, glassmorphism, high-end aesthetic.
+    - **Image**: The main image source is the literal string "processedImage".
     `;
 
     const response = await ai.models.generateContentStream({
@@ -150,7 +162,7 @@ export async function POST(request: NextRequest) {
         tools: [{ functionDeclarations: [generatePortfolioTool] }],
         toolConfig: {
           functionCallingConfig: {
-            mode: FunctionCallingConfigMode.ANY, // Force the model to use the tool
+            mode: FunctionCallingConfigMode.AUTO,
           }
         }
       }
@@ -170,8 +182,6 @@ export async function POST(request: NextRequest) {
             }
 
             // 2. Handle Function Calls
-            // In the new SDK, function calls might be in chunk.functionCalls() or similar
-            // Let's inspect the chunk structure for function calls
             const functionCalls = chunk.functionCalls;
             if (functionCalls && functionCalls.length > 0) {
               for (const call of functionCalls) {
