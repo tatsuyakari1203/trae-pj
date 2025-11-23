@@ -7,7 +7,6 @@ import { UploadForm } from "@/components/UploadForm";
 import { BentoGrid } from "@/components/BentoGrid";
 import { H1 } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
-import LetterGlitch from "@/components/LetterGlitch";
 import DecryptedText from "@/components/DecryptedText";
 import SplitText from "@/components/SplitText";
 import { BackgroundLayer, BACKGROUNDS } from "@/components/BackgroundLayer";
@@ -19,9 +18,8 @@ export default function Home() {
   const [backgroundComponent, setBackgroundComponent] = useState<any>(null);
 
   useEffect(() => {
-    // Randomly select a background on mount
-    const randomBg = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
-    setBackgroundComponent(randomBg);
+    // Set the default background (Dark Veil)
+    setBackgroundComponent(BACKGROUNDS[0]);
   }, []);
 
   type PortfolioData = {
@@ -237,46 +235,48 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
+    <div className="min-h-screen bg-black relative overflow-hidden font-mono selection:bg-[#32f08c] selection:text-black">
       {/* Background Effect */}
       <BackgroundLayer backgroundComponent={backgroundComponent} />
 
+      {/* Scanline Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
+
       <div className="container-modern py-12 relative z-10">
-        <header className="mb-10 text-center md:text-left">
-          <div className="text-4xl md:text-6xl font-bold tracking-tighter mb-2 font-mono">
-            <DecryptedText
-              text="Instant Bento"
-              animateOn="view"
-              revealDirection="center"
-              className="text-[var(--foreground)]"
-            />
-          </div>
-          <div className="text-[var(--muted)] text-lg font-mono">
-            <SplitText
-              text="From Chaos to Portfolio in 5 Seconds"
-              className="inline-block"
-              delay={50}
-            />
-          </div>
-        </header>
+        {!isLoading && (
+          <header className="mb-16 text-center md:text-left relative">
+            {/* Decorative Pixel Elements */}
+            <div className="absolute -top-8 -left-8 w-4 h-4 border-t-2 border-l-2 border-[#32f08c] opacity-50" />
+            <div className="absolute -top-8 -right-8 w-4 h-4 border-t-2 border-r-2 border-[#32f08c] opacity-50" />
+
+            <div className="text-4xl md:text-7xl font-bold tracking-tighter mb-4 font-mono text-white">
+              <DecryptedText
+                text="Instant Bento"
+                animateOn="view"
+                revealDirection="center"
+                className="text-white"
+              />
+            </div>
+            <div className="text-zinc-400 text-lg md:text-xl font-mono flex items-center gap-2 justify-center md:justify-start">
+              <span className="text-[#32f08c]">{`>`}</span>
+              <SplitText
+                text="From Chaos to Portfolio in 5 Seconds"
+                className="inline-block"
+                delay={50}
+              />
+              <span className="animate-pulse w-2 h-4 bg-[#32f08c] inline-block ml-1" />
+            </div>
+          </header>
+        )}
 
         {!portfolioData && !isLoading && (
-          <UploadForm onSubmit={handleGenerate} />
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <UploadForm onSubmit={handleGenerate} />
+          </div>
         )}
 
         {isLoading && (
-           <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
-             <div className="absolute inset-0 opacity-30 pointer-events-none">
-                <LetterGlitch
-                  glitchColors={['#32f08c', '#ffffff', '#000000']}
-                  glitchSpeed={50}
-                  centerVignette={true}
-                  outerVignette={true}
-                  smooth={true}
-                  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                />
-             </div>
-
+           <div className="min-h-[60vh] flex flex-col items-center justify-center relative z-50">
              <div className="relative z-10 max-w-2xl w-full p-8 space-y-6">
                <div className="text-center space-y-2">
                  <h2 className="text-3xl font-bold text-white animate-pulse font-mono">
@@ -294,39 +294,58 @@ export default function Home() {
         )}
 
         {portfolioData && !isLoading && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center">
-              <H1 className="text-2xl">Your Portfolio</H1>
-              <div className="flex gap-2">
-                <Button onClick={handleDownload} variant="secondary">Download HTML</Button>
-                <Button onClick={handleRecreate} variant="secondary">Recreate</Button>
-                <Button onClick={handleReset} variant="secondary">Create Another</Button>
+          <div className="space-y-8 animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-white/10 pb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-[#32f08c] text-2xl">●</span>
+                <H1 className="text-2xl font-mono uppercase tracking-widest text-white">System_Output: Portfolio_Generated</H1>
+              </div>
+              <div className="flex gap-3">
+                <Button onClick={handleDownload} variant="secondary" className="font-mono text-xs uppercase tracking-wider hover:bg-[#32f08c] hover:text-black transition-colors">
+                  [ Download HTML ]
+                </Button>
+                <Button onClick={handleRecreate} variant="secondary" className="font-mono text-xs uppercase tracking-wider hover:bg-[#32f08c] hover:text-black transition-colors">
+                  [ Recreate ]
+                </Button>
+                <Button onClick={handleReset} variant="secondary" className="font-mono text-xs uppercase tracking-wider hover:bg-[#32f08c] hover:text-black transition-colors">
+                  [ New ]
+                </Button>
               </div>
             </div>
             <BentoGrid data={portfolioData} />
           </div>
         )}
 
-        <footer className="mt-20 border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-center gap-4 text-zinc-500 font-mono text-sm text-center">
-          <div className="flex flex-col md:flex-row items-center gap-2">
-            <span className="text-xl">🥉</span>
-            <span className="font-semibold text-zinc-400">3rd Prize Winner</span>
-            <span className="hidden md:inline text-zinc-700 mx-2">|</span>
-            <span>TRAE Meetup & Vibe Coding Experience @ Vietnam</span>
-          </div>
-          <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity mt-2 md:mt-0 md:ml-4">
-            <span>Powered by</span>
-            <Image
-              src="https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/trae-color.png"
-              alt="Trae Logo"
-              width={20}
-              height={20}
-              className="h-5 w-5 object-contain"
-              unoptimized
-            />
-            <span className="font-bold text-zinc-300">Trae</span>
-          </div>
-        </footer>
+        {!isLoading && (
+          <footer className="mt-24 border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 font-mono text-xs uppercase tracking-widest">
+            <div className="flex items-center gap-2">
+              <span className="text-[#32f08c]">●</span>
+              <span>System Status: Online</span>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-4 text-center">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🥉</span>
+                <span className="text-zinc-400">3rd Prize Winner</span>
+                <span className="hidden md:inline text-zinc-700">|</span>
+                <span>TRAE Meetup & Vibe Coding Experience @ Vietnam</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+              <span>Powered by</span>
+              <Image
+                src="https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/trae-color.png"
+                alt="Trae Logo"
+                width={16}
+                height={16}
+                className="h-4 w-4 object-contain"
+                unoptimized
+              />
+              <span className="font-bold text-zinc-300">Trae</span>
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   );

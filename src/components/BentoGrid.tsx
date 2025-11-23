@@ -193,7 +193,7 @@ export function BentoGrid({ data }: BentoGridProps) {
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)] p-4"
+      className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto auto-rows-[minmax(180px,auto)] grid-flow-dense p-4"
     >
       {/* Header / Hero Card - Blended Avatar Style */}
       <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-4 row-span-2 relative group">
@@ -287,7 +287,7 @@ export function BentoGrid({ data }: BentoGridProps) {
       </motion.div>
 
       {/* Skills - Masonry-ish */}
-      <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-6 row-span-auto">
+      <motion.div variants={item} className="col-span-1 md:col-span-4 lg:col-span-6">
         <BentoCard className="h-full p-8" translucent={true}>
           <h3 className="text-lg font-semibold mb-6 font-mono text-white">Expertise</h3>
           <div className="flex flex-wrap gap-2">

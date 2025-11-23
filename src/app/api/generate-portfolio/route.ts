@@ -191,6 +191,12 @@ export async function POST(request: NextRequest) {
         - **Grid Rules**:
             - Use 'colSpan' 2 or 3 for text-heavy blocks to ensure readability.
             - Use 'rowSpan' 1 for headers/titles.
+            - **Grid Layout Optimization (CRITICAL)**:
+                - The grid has **6 columns** on large screens.
+                - Ensure your 'colSpan' values sum up to multiples of 6 (e.g., 3+3, 2+2+2, 4+2) to fill rows completely.
+                - Avoid 'colSpan: 5' or 'colSpan: 1' unless they are paired together.
+                - Prefer 'colSpan: 2', 'colSpan: 3', or 'colSpan: 6'.
+                - Use 'colSpan: 4' only if you have a 'colSpan: 2' to go with it.
 
     4.  **Execution**:
         - Call the 'generate_portfolio' function with the fully populated data.
