@@ -39,14 +39,17 @@ interface BentoGridProps {
 const DynamicComponent = ({ node, safeData }: { node: CustomNode, safeData: { processedImage: string } }) => {
   if (node.type !== 'react-component' || !node.component) return null;
 
-  const { component, props, children } = node;
+  const { component, props, children, content } = node;
+
+  // Helper to get the best available text content
+  const getText = () => children || props?.text || content || "";
 
   switch (component) {
     case 'GradientText':
       return (
         <div className="h-full w-full flex items-center justify-center p-6 font-sans">
           <GradientText {...props}>
-            {children || props.text || "Gradient Text"}
+            {getText() || "Gradient Text"}
           </GradientText>
         </div>
       );
@@ -56,18 +59,18 @@ const DynamicComponent = ({ node, safeData }: { node: CustomNode, safeData: { pr
           <div className="text-5xl font-bold text-white mb-2">
             <CountUp {...props} />
           </div>
-          {children && <span className="text-zinc-400 text-sm uppercase tracking-widest">{children}</span>}
+          {(children || content) && <span className="text-zinc-400 text-sm uppercase tracking-widest">{children || content}</span>}
         </div>
       );
     case 'ShinyText':
       return (
         <div className="h-full w-full flex items-center justify-center p-6 font-sans">
-          <ShinyText {...props} text={children || props.text || "Shiny Text"} />
+          <ShinyText {...props} text={getText() || "Shiny Text"} />
         </div>
       );
     case 'TiltedCard':
        // Fix: Use processedImage if the AI suggests it or if missing
-       const imageSrc = props.imageSrc === 'processedImage' || !props.imageSrc
+       const imageSrc = props?.imageSrc === 'processedImage' || !props?.imageSrc
          ? safeData.processedImage
          : props.imageSrc;
 
@@ -79,13 +82,13 @@ const DynamicComponent = ({ node, safeData }: { node: CustomNode, safeData: { pr
     case 'DecryptedText':
       return (
         <div className="h-full w-full flex items-center justify-center p-6 font-sans">
-          <DecryptedText {...props} text={children || props.text || "Decrypted"} />
+          <DecryptedText {...props} text={getText() || "Decrypted"} />
         </div>
       );
     case 'SplitText':
       return (
         <div className="h-full w-full flex items-center justify-center p-6 font-sans">
-          <SplitText threshold={0.1} {...props} text={children || props.text || "Split Text"} />
+          <SplitText threshold={0.1} {...props} text={getText() || "Split Text"} />
         </div>
       );
     default:

@@ -122,16 +122,23 @@ export async function POST(request: NextRequest) {
         - Create 4-6 impressive stats (e.g., "Years Exp", "Projects", "Clients").
         - Define a sophisticated color theme.
 
-    3.  **Layout Design (Bento Grid)**:
-        - Use a mix of 'colSpan' (1-3) and 'rowSpan' (1-2).
-        - **CRITICAL**: You MUST use the provided React components in 'customNodes' to make the portfolio interactive.
-        - **Components to Use**:
-            - 'GradientText': For the main headline/title.
-            - 'SplitText': For the bio/introduction.
-            - 'CountUp': For *each* stat item.
-            - 'TiltedCard': For the main profile image (use 'processedImage' as imageSrc).
-            - 'ShinyText': For call-to-action or highlights.
-            - 'DecryptedText': For job titles or skills.
+    3.  **Layout Design (Bento Grid - Custom Nodes)**:
+        - The system ALREADY generates the Main Hero (Image), Bio, Stats, and Skills sections. **DO NOT duplicate these.**
+        - Use 'customNodes' to add **EXTRA** creative blocks that make the portfolio unique. Examples:
+            - "Design Philosophy" or "My Approach"
+            - "Favorite Tech Stack" (detailed)
+            - "Recent Awards" or "Recognition"
+            - "Client Testimonials"
+            - "Call to Action" (e.g., "Let's work together")
+        - **Component Usage Rules**:
+            - Use 'GradientText' for catchy headlines (e.g., "Creative Vision").
+            - Use 'ShinyText' for special highlights or CTAs.
+            - Use 'DecryptedText' for technical keywords.
+            - Use 'SplitText' for short, impactful statements.
+            - **CRITICAL**: Put the main text to display in the 'content' field of the node object.
+        - **Grid Rules**:
+            - Use 'colSpan' 2 or 3 for text-heavy blocks to ensure readability.
+            - Use 'rowSpan' 1 for headers/titles.
 
     4.  **Execution**:
         - Call the 'generate_portfolio' function with the fully populated data.
