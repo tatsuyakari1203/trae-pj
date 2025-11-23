@@ -10,6 +10,9 @@ import ShinyText from "@/components/ShinyText";
 import TiltedCard from "@/components/TiltedCard";
 import DecryptedText from "@/components/DecryptedText";
 import SplitText from "@/components/SplitText";
+import SpotlightCard from "@/components/SpotlightCard";
+import CircularText from "@/components/CircularText";
+import Iridescence from "@/components/Iridescence";
 
 interface CustomNode {
   colSpan: number;
@@ -89,6 +92,29 @@ const DynamicComponent = ({ node, safeData }: { node: CustomNode, safeData: { pr
       return (
         <div className="h-full w-full flex items-center justify-center p-6 font-sans">
           <SplitText threshold={0.1} {...props} text={getText() || "Split Text"} />
+        </div>
+      );
+    case 'SpotlightCard':
+      return (
+        <SpotlightCard className="h-full w-full flex items-center justify-center p-6 font-sans" {...props}>
+           <div className="relative z-10 text-center text-zinc-200">
+             {getText() || "Spotlight Card"}
+           </div>
+        </SpotlightCard>
+      );
+    case 'CircularText':
+      return (
+        <div className="h-full w-full flex items-center justify-center p-6 font-sans overflow-hidden">
+          <CircularText text={getText() || "Circular Text"} {...props} />
+        </div>
+      );
+    case 'Iridescence':
+      return (
+        <div className="h-full w-full relative overflow-hidden font-sans rounded-3xl">
+           <Iridescence {...props} />
+           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-2xl font-bold text-white mix-blend-overlay tracking-tighter">{getText()}</span>
+           </div>
         </div>
       );
     default:

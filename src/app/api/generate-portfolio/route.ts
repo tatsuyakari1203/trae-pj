@@ -135,6 +135,9 @@ export async function POST(request: NextRequest) {
             - Use 'ShinyText' for special highlights or CTAs.
             - Use 'DecryptedText' for technical keywords.
             - Use 'SplitText' for short, impactful statements.
+            - Use 'SpotlightCard' for feature cards or testimonials (interactive hover effect).
+            - Use 'CircularText' for visual flair (e.g., "Scroll Down", "Contact Me", "Open to Work").
+            - Use 'Iridescence' for a purely visual, artistic background block (set content to a short word like "ART" or "FLOW").
             - **CRITICAL**: Put the main text to display in the 'content' field of the node object.
         - **Grid Rules**:
             - Use 'colSpan' 2 or 3 for text-heavy blocks to ensure readability.
